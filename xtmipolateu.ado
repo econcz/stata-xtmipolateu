@@ -1,8 +1,8 @@
-*! version 1.1.1  31jan2022  I I Bolotov
+*! version 1.1.2  07oct2022  I I Bolotov
 program def xtmipolateu, rclass
 	version 12.0
 	/*
-		This program inter-- and extrapolates missing values in a time series   
+		This program inter- and extrapolates missing values in a time series   
 		or multidimensional varlist with (SSC) mipolate, allowing the user to   
 		export descriptive statistics with (SSC) summarizeby and to write ts-   
 		and xtline graphs and tables with the statistics to a new or existing   
@@ -21,11 +21,11 @@ program def xtmipolateu, rclass
 	[/* ignore */ GENerate(string) /* ignore */]							///
 	[export(string asis)]													///
 	[put(string) PBReak NFORmat(string) SAving(string asis) *]
-	local put = trim("`put'")
-	local nformat = cond("`nformat'" != "", trim("`nformat'"), "%9.2fc")
+	local put = trim(`"`put'"')
+	local nformat = cond(`"`nformat'"' != "", trim(`"`nformat'"'), "%9.2fc")
 	// adjust and preprocess options                                            
 	if ! regexm(`"`put'"', "^(docx|pdf|)$") {
-		di as err "command put`put' is unrecognized"
+		di as err `"command put`put' is unrecognized"'
 		exit 199
 	}
 	tempname by1 by2 var1 var2
@@ -35,7 +35,7 @@ program def xtmipolateu, rclass
 	qui which summarizeby
 	// preserve statistics and data for export or putting into a document       
 	qui {
-		if `"`export'`put'"' != "" {
+		if trim(`"`export'`put'"') != "" {
 			qui {
 				tempfile tmpf_stats
 				local `by2' = cond("`i'" != "", "by(`i')", "")
@@ -46,7 +46,7 @@ program def xtmipolateu, rclass
 				restore
 			}
 		}
-		if `"`put'"' != "" {
+		if trim(`"`put'"') != "" {
 			tempfile tmpf_dta tmpf_dta_hat
 			save `tmpf_dta'
 		}
@@ -64,7 +64,7 @@ program def xtmipolateu, rclass
 	// export statistics or put graph(s) and table(s) into a document           
 	tempname n a b l list
 	/* export statistics                                                      */
-	if `"`export'`put'"' != "" {
+	if trim(`"`export'`put'"') != "" {
 		preserve
 		tempvar id1 id2
 		qui {
@@ -83,7 +83,7 @@ program def xtmipolateu, rclass
 			order v `i' mean* sd* min* max*
 			sort `id1'*
 			drop `id1'*
-			if `"`put'"' != "" {
+			if trim(`"`put'"') != "" {
 				by v (`i'), sort: count
 				local `n' = `r(N)' + 1	// include header
 				ds v, not
@@ -99,13 +99,13 @@ program def xtmipolateu, rclass
 			}
 			save `tmpf_stats', replace
 		}
-		if `"`export'"' != "" {
+		if trim(`"`export'"') != "" {
 			export `export'
 		}
 		restore
 	}
 	/* put graph(s) and table(s) into a document                              */
-	if `"`put'"' != "" {
+	if trim(`"`put'"') != "" {
 		cap put`put' begin	// if not opened by user beforehand
 		save `tmpf_dta_hat'	// save data in file to nest preserve / restore
 		tempvar g orig
@@ -161,7 +161,7 @@ program def xtmipolateu, rclass
 				halign(right) nformat(`nformat')
 			}
 		}
-		if `"`saving'"' != "" {
+		if trim(`"`saving'"') != "" {
 			put`put' save `saving'
 		}
 		use `tmpf_dta_hat', clear
